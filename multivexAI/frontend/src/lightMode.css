@@ -1,0 +1,144 @@
+/*
+ * Additive light-mode layer for MultivexAI.
+ *
+ * Every rule is scoped under `html.light-mode` — the class ThemeToggle adds
+ * to <html> only when the user picks light mode. With the class absent these
+ * rules are completely inert, so the existing dark theme is untouched.
+ *
+ * The app's palette is hardcoded per-component (bg-[#0d0f15], bg-white/[0.05],
+ * text-slate-400, ...), so this layer remaps those exact utility tokens from
+ * the outside. Tailwind v4 ships utilities inside @layer, and unlayered CSS
+ * always beats layered CSS, so no !important is needed.
+ *
+ * Code surfaces (Monaco editor, react-syntax-highlighter) read the same
+ * class reactively via the useThemeMode hook and switch palettes themselves,
+ * so no CSS remap is needed for them. Still left dark here: modal backdrops
+ * (bg-black/50...) and accent gradients (from-indigo-500 to-violet-700...).
+ */
+
+html.light-mode {
+    color-scheme: light;
+}
+
+/* ── Opaque dark backgrounds → white / light surfaces ─────────────────── */
+
+/* App shell, panels, nav bars, sidebar, artifact panel */
+html.light-mode [class*="bg-[#0d0f15]"],
+html.light-mode [class*="bg-[#0d0f14]"],
+html.light-mode [class*="bg-[#0b0d12]"] {
+    background-color: #ffffff;
+}
+
+/* Elevated surfaces: cards, menus, drawers, code-block headers */
+html.light-mode [class*="bg-[#13151c]"],
+html.light-mode [class*="bg-[#16181f]"],
+html.light-mode [class*="bg-[#0f1117]"],
+html.light-mode [class*="bg-[#1b1d24]"] {
+    background-color: #eef1f6;
+}
+
+/* Sidebar rail tooltip bubble */
+html.light-mode [class*="bg-[#2d2d2d]"] {
+    background-color: #ffffff;
+}
+
+/* ── Translucent white fills → translucent dark fills ──────────────────── */
+/* Exact-token matches (~=) so hover:bg-white/... variants are untouched.  */
+/* Solid bg-white (login button, artifact iframe) is intentionally kept.   */
+
+html.light-mode [class~="bg-white/5"],
+html.light-mode [class~="bg-white/10"],
+html.light-mode [class~="bg-white/[0.03]"],
+html.light-mode [class~="bg-white/[0.04]"],
+html.light-mode [class~="bg-white/[0.05]"],
+html.light-mode [class~="bg-white/[0.06]"],
+html.light-mode [class~="bg-white/[0.07]"],
+html.light-mode [class~="bg-white/[0.1]"],
+html.light-mode [class~="bg-white/[0.14]"] {
+    background-color: rgba(15, 23, 42, 0.05);
+}
+
+/* ── Borders ───────────────────────────────────────────────────────────── */
+
+html.light-mode [class~="border-white/10"],
+html.light-mode [class~="border-white/15"],
+html.light-mode [class~="border-white/[0.05]"],
+html.light-mode [class~="border-white/[0.06]"],
+html.light-mode [class~="border-white/[0.07]"],
+html.light-mode [class~="border-white/[0.08]"],
+html.light-mode [class~="border-white/[0.60]"] {
+    border-color: rgba(15, 23, 42, 0.12);
+}
+
+/* ── Text ──────────────────────────────────────────────────────────────── */
+/* Keep white text on colored surfaces (gradients / solid indigo buttons). */
+
+html.light-mode .text-white:not([class*="bg-gradient"]):not([class*="bg-linear"]):not([class*="bg-indigo-5"]):not([class*="bg-indigo-6"]) {
+    color: #0f172a;
+}
+
+html.light-mode .text-slate-100,
+html.light-mode .text-slate-200 {
+    color: #1e293b;
+}
+
+html.light-mode .text-slate-300 {
+    color: #334155;
+}
+
+html.light-mode .text-slate-400 {
+    color: #475569;
+}
+
+html.light-mode .text-slate-500 {
+    color: #64748b;
+}
+
+html.light-mode .text-slate-600 {
+    color: #94a3b8;
+}
+
+html.light-mode .text-gray-300 {
+    color: #475569;
+}
+
+/* Accent colors tuned for contrast on light surfaces */
+html.light-mode .text-indigo-300 {
+    color: #4338ca;
+}
+
+html.light-mode .text-indigo-400 {
+    color: #4f46e5;
+}
+
+html.light-mode .text-rose-400 {
+    color: #e11d48;
+}
+
+/* Placeholder text (textarea / search inputs) */
+html.light-mode [class*="placeholder:text-slate-500"]::placeholder {
+    color: #94a3b8;
+}
+
+/* ── Hover states ──────────────────────────────────────────────────────── */
+/* The static remaps above (unlayered) would otherwise swallow Tailwind's  */
+/* layered hover utilities, so equivalent light-mode hovers are restored.  */
+
+html.light-mode [class*="hover:bg-white/"]:hover {
+    background-color: rgba(15, 23, 42, 0.08);
+}
+
+html.light-mode [class*="hover:border-white/"]:hover {
+    border-color: rgba(15, 23, 42, 0.15);
+}
+
+html.light-mode [class*="hover:text-white"]:hover,
+html.light-mode [class*="hover:text-slate-100"]:hover,
+html.light-mode [class*="hover:text-slate-200"]:hover,
+html.light-mode [class*="hover:text-slate-300"]:hover {
+    color: #0f172a;
+}
+
+html.light-mode [class*="hover:text-slate-400"]:hover {
+    color: #475569;
+}

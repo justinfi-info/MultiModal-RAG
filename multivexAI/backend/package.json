@@ -1,0 +1,26 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MultiVexAI backend",
+  "type": "module",
+  "workspaces": [
+    "gateway",
+    "services/auth",
+    "services/chat_service",
+    "services/agents",
+    "services/billing"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces --if-present",
+    "dev:gateway": "npm run dev --workspace gateway",
+    "dev:auth": "npm run dev --workspace services/auth",
+    "dev:chat": "npm run dev --workspace services/chat_service",
+    "dev:agents": "npm run dev --workspace services/agents",
+    "install:all": "npm install",
+    "test": "jest"
+  },
+  "dependencies": {
+    "ioredis": "^6.0.0"
+  }
+}

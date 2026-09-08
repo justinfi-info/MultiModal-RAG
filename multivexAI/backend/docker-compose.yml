@@ -1,0 +1,110 @@
+# MultiVexAI backend infrastructure.
+#
+# Start the full stack:   docker compose up -d --build
+# Stop everything:        docker compose down
+#
+# Each service's .env keeps localhost values for local dev
+# (npm run dev:auth / dev:chat / dev:agents); the `environment:`
+# overrides below point services at each other by container
+# hostname when running in this stack. Stop the matching
+# compose container first to free its port before running a
+# service locally.
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: multivexai-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+
+  auth:
+    build:
+      context: .
+      dockerfile: services/auth/Dockerfile
+    container_name: multivexai-auth
+    env_file:
+      - services/auth/.env
+    environment:
+      PORT: 8001
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "8001:8001"
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  chat:
+    build:
+      context: .
+      dockerfile: services/chat_service/Dockerfile
+    container_name: multivexai-chat
+    env_file:
+      - services/chat_service/.env
+    environment:
+      PORT: 8002
+    ports:
+      - "8002:8002"
+    restart: unless-stopped
+
+  agents:
+    build:
+      context: .
+      dockerfile: services/agents/Dockerfile
+    container_name: multivexai-agents
+    env_file:
+      - services/agents/.env
+    environment:
+      PORT: 8003
+      REDIS_URL: redis://redis:6379
+      CHAT_SERVICE: http://chat:8002
+    ports:
+      - "8003:8003"
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  billing:
+    build:
+      context: .
+      dockerfile: services/billing/Dockerfile
+    container_name: multivexai-billing
+    env_file:
+      - services/billing/.env
+    environment:
+      PORT: 8004
+      AUTH_SERVICE: http://auth:8001
+    ports:
+      - "8004:8004"
+    depends_on:
+      - auth
+    restart: unless-stopped
+
+  gateway:
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
+    container_name: multivexai-gateway
+    env_file:
+      - gateway/.env
+    environment:
+      PORT: 8000
+      AUTH_SERVICE: http://auth:8001
+      CHAT_SERVICE: http://chat:8002
+      AGENTS_SERVICE: http://agents:8003
+      BILLING_SERVICE: http://billing:8004
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+      - auth
+      - chat
+      - agents
+      - billing
+    restart: unless-stopped
+
+volumes:
+  redis-data:
